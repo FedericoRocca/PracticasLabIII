@@ -76,15 +76,47 @@ group by Socios.Genero
 
 -- 18) Por cada socio la cantidad de sedes distintas a las que asiste. Indicar el apellido y nombre del
 -- socio y la cantidad calculada (XLS).
+select Socios.Nombres, Socios.Apellidos, count(distinct Actividades.IDSede) as "Cantidad de sedes" from Socios
+inner join Inscripciones on (Socios.Legajo = Inscripciones.Legajo)
+inner join Actividades on (Inscripciones.IDActividad = Actividades.ID)
+group by Socios.Nombres, Socios.Apellidos
+
 -- 19) La cantidad de pagos de distinto importe registrados.
+select count(distinct(Importe)) as "Pagos de distinto importe" from Pagos
+
 -- 20) La sumatoria de importes abonados por cada socio. Listar el apellido y nombres de los socios y
 -- el total abonado. Sólo listar los socios que hayan abonado más de $3000 en total. (XLS)
+select Socios.Nombres, Socios.Apellidos, SUM(Pagos.Importe) as "Suma de pagos" from Socios
+inner join Pagos on (Socios.Legajo = Pagos.Legajo)
+group by Socios.Nombres, Socios.Apellidos
+having sum(Pagos.Importe) > 3000
+
 -- 21) La sumatoria de importes menores a $1000 abonados por cada socio. Listar el apellido y
 -- nombres de los socios y el total abonado. Sólo listar los socios que hayan abonado más de
 -- $3000. (XLS)
+select Socios.Nombres, Socios.Apellidos, sum(Pagos.Importe) from Socios
+inner join Pagos on (Socios.Legajo = Pagos.Legajo)
+where Pagos.Importe < 1000
+group by Socios.Nombres, Socios.Apellidos
+having sum(Pagos.Importe) > 3000
+
 -- 22) La cantidad de actividades realizadas por socio. Listar el apellido y nombres de todos los socios
 -- y la cantidad de actividades en las que se encuentra inscripto. Sólo listar los socios que realicen
 -- más de una actividad.
+select Socios.Apellidos, Socios.Nombres, count( distinct Inscripciones.IDActividad ) from Socios
+inner join Inscripciones on (Inscripciones.Legajo = Socios.Legajo)
+group by Socios.Apellidos, Socios.Nombres
+having count( distinct Inscripciones.IDActividad ) > 1
+
 -- 23) La cantidad de socios por actividad. Listar el nombre de la actividad y la cantidad de socios
 -- inscriptos a ella.
+select Actividades.Nombre as "Actividad", count(distinct Socios.Legajo) as "Cantidad inscriptos" from Socios
+inner join Inscripciones on (Socios.Legajo = Inscripciones.Legajo)
+right join Actividades on (Inscripciones.IDActividad = Actividades.ID)
+group by Actividades.Nombre
+
 -- 24) Las actividades que no posean socios inscriptos. Listar el nombre de la actividad.
+select Actividades.Nombre as "Actividad" from Actividades
+left join Inscripciones on (Actividades.id = Inscripciones.IDActividad)
+group by Actividades.Nombre
+having count(Inscripciones.IDActividad) = 0
