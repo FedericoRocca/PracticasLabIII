@@ -139,12 +139,59 @@ GO
 -- pago. Para ello deberá sumar el costo de todas las actividades que realice el
 -- socio en las que no se encuentre becado. Tener en cuenta que el importe puede
 -- ser cero.
+ 
+create procedure SP_RegistraPago
+(
+	@legajo bigint,
+	@mes smallint,
+	@anio smallint
+) as
+begin
+	declare @totalPagos money
+	select @totalPagos = sum(Actividades.Costo) from Inscripciones
+	inner join Actividades on (Inscripciones.IDActividad = Actividades.ID)
+	where Legajo = @legajo and Becado = 0
+	insert into Pagos values (@legajo, @mes, @anio, getdate(), 1, @totalPagos)
+end
+GO
+exec SP_RegistraPago 1000, 3, 2020
+GO
+
 
 -- 9) Hacer un procedimiento almacenado que permita eliminar un socio. Para ello
 -- debe realizar, además, la eliminación de: 
 -- Todos los pagos e inscripciones del socio.
+create procedure SP_EliminaSocio
+(
+	@legajo bigint
+) as
+begin
+	delete from Pagos where Pagos.Legajo = @legajo
+	delete from Inscripciones where Inscripciones.Legajo = @legajo
+	delete from Socios where Socios.Legajo = @legajo
+end
+GO
+exec SP_EliminaSocio 1000
+GO
 
 -- 10) Hacer un procedimiento almacenado que reciba un valor Decimal(5, 2) y
 -- permita aumentar porcentualmente el costo de todas las actividades 
 -- a partir de dicho valor. Generar una excepción si el valor 
 -- recibido no es positivo. 
+create procedure SP_AumentarCostoActividades
+(
+	@porcentaje decimal(5,2)
+)
+as
+begin
+	if @porcentaje < 0
+		begin
+			raiserror('Valor erroneo',16,1)
+		end
+	update Actividades set Costo = Costo + (Costo * @porcentaje / 100)
+end
+GO
+select * from Actividades
+exec SP_AumentarCostoActividades 50.0
+select * from Actividades
+GO
