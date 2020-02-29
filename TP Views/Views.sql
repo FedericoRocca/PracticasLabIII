@@ -44,6 +44,10 @@ GO
 -- 5) Hacer una vista que permita ver para cada socio el apellido y nombre,
 -- el género, la cantidad de pagos realizados y el importe total en concepto de
 -- pagos.
+create view VW_SociosPagosImportes as 
 select Socios.Apellidos, Socios.Nombres, Socios.Genero, count(Pagos.IDPago) as 'Cantidad de pagos', sum(Pagos.Importe) as 'Importe de pagos' from Pagos
 inner join Socios on (Pagos.Legajo = Socios.Legajo)
 group by Socios.Apellidos, Socios.Nombres, Socios.Genero
+GO
+select * from VW_SociosPagosImportes
+GO
